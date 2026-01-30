@@ -1,6 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:nebula_ui/entity/entity.dart';
-import 'package:nebula_ui/feature/config_state.dart';
+import 'package:nebula_ui/feature/config/config_state.dart';
 import 'package:nebula_ui/service/service.dart';
 
 class ConfigManager extends ManagerBase<ConfigState>

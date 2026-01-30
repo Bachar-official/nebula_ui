@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nebula_ui/feature/config_manager.dart';
-import 'package:nebula_ui/feature/config_state.dart';
+import 'package:nebula_ui/feature/config/config_manager.dart';
+import 'package:nebula_ui/feature/config/config_state.dart';
 import 'package:nebula_ui/service/service.dart';
 import 'package:yx_scope/yx_scope.dart';
 import 'package:logger/logger.dart';

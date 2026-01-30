@@ -341,6 +341,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  yx_state_flutter:
+    dependency: "direct main"
+    description:
+      name: yx_state_flutter
+      sha256: b0414265c6861f9fd295385ac9c5f01fc99b6163c9e612997163b09a6579c105
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
 sdks:
   dart: ">=3.10.7 <4.0.0"
   flutter: ">=3.35.0"
