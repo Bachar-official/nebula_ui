@@ -10,7 +10,7 @@ class ConfigService {
   Future<String> getNebulaPath() async {
     if (Platform.isLinux || Platform.isWindows) {
       final cmd = await Process.run(Platform.isLinux ? 'which' : 'where', ['nebula']);
-      return decodeCLIMessage(cmd);
+      return decodeCLIMessage(cmd).trim();
     }
 
     throw Exception('Platform not supported');

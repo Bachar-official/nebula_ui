@@ -1,5 +1,9 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart' hide Theme;
+import 'package:nebula_ui/app/routing.dart';
+import 'package:nebula_ui/components/empty_config_dialog.dart';
 import 'package:nebula_ui/entity/entity.dart';
+import 'package:nebula_ui/entity/enum/enum.dart';
 import 'package:nebula_ui/feature/config/config_state.dart';
 import 'package:nebula_ui/service/service.dart';
 
@@ -21,17 +25,16 @@ class ConfigManager extends ManagerBase<ConfigState>
       handle((emit) async => emit(state.copyWith(isLoading: isLoading)));
 
   void setConfigBinary(String path) => handle((emit) async {
-    handle(
-      (emit) async =>
-          emit(state.copyWith(config: state.config.copyWith(binaryPath: path))),
-    );
+    final newConfig = state.config.copyWith(binaryPath: path);
+    emit(state.copyWith(config: newConfig));
   });
 
   void setConfigYml(String path) => handle((emit) async {
-    handle(
-      (emit) async =>
-          emit(state.copyWith(config: state.config.copyWith(configPath: path))),
-    );
+    emit(state.copyWith(config: state.config.copyWith(configPath: path)));
+  });
+
+  void setTheme(Theme? theme) => handle((emit) async {
+    emit(state.copyWith(config: state.config.copyWith(theme: theme)));
   });
 
   Future<void> getAllNebulaConfig() async {
@@ -40,8 +43,11 @@ class ConfigManager extends ManagerBase<ConfigState>
       setIsLoading(true);
       final config = await configService.getConfig();
       if (config.isInitial) {
-        warning('Nebula config not found');
-        await searchNebulaBinary();
+        warning('Nebula config not found');        
+        final settingsResult = await showDialog<bool>(context: deps.navKey.currentState!.context, builder: (ctx) => EmptyConfigDialog());
+        if (settingsResult!) {
+          deps.navKey.currentState!.pushNamed(AppRouter.preferences);
+        }            
       }
       handle((emit) async => emit(state.copyWith(config: config)));
     } catch (e, s) {
@@ -62,7 +68,6 @@ class ConfigManager extends ManagerBase<ConfigState>
       setIsLoading(true);
       final result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Select Nebula binary',
-        type: .custom,
       );
       checkCondition(
         result == null || result.files.isEmpty,

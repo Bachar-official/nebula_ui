@@ -7,7 +7,7 @@ enum Theme {
   final String themeName;
   const Theme(this.themeName);
 
-  ThemeData get theme {
+  ThemeData get themeData {
     return switch (this) {
       Theme.light => _lightTheme,
       Theme.dark => _darkTheme,

@@ -28,11 +28,11 @@ class NebulaService {
 
   Future<void> testNebulaConfig(Config config) async {
     final result = await Process.run(
-      config.binaryPath!,
-      [
+      config.binaryPath!.trim(),
+      [        
         '-test',
         _configArg,
-        config.configPath!,
+        config.configPath!.trim(),
       ],
     );
 
