@@ -17,56 +17,110 @@ class ConfigScreen extends StatelessWidget {
         return StateBuilder<ConfigState>(
           stateReadable: manager,
           builder: (context, state, _) => Scaffold(
-            appBar: AppBar(title: const Text('Settings')),
+            appBar: AppBar(
+              title: const Text('Settings'),
+              actions: [
+                IconButton(
+                  tooltip: 'Save config',
+                  icon: const Icon(Icons.save),
+                  onPressed: manager.saveAllConfig,
+                ),
+              ],
+            ),
             body: state.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Center(
-                    child: Column(
-                      mainAxisSize: .min,
-                      crossAxisAlignment: .center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: .center,
-                          children: [
-                            Text('Nebula binary: ${state.config.binaryPath ?? 'Not set'}'),
-                            TextButton(
-                              onPressed: manager.setNebulaBinary,
-                              child: const Text('Set'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(15),
+                      child: Column(
+                        mainAxisSize: .min,
+                        crossAxisAlignment: .center,
+                        spacing: 10.0,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: .center,
+                            children: [
+                              Expanded(
+                                flex: 5,
+                                child: TextField(
+                                  controller: manager.binaryPathC,
+                                  decoration: InputDecoration(
+                                    labelText: 'Nebula binary path',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  readOnly: true,
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: TextButton(
+                                  onPressed: manager.setNebulaBinary,
+                                  child: const Text('Browse...'),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: TextButton(
+                                  onPressed: manager.searchNebulaBinary,
+                                  child: const Text('Find'),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: .center,
+                            children: [
+                              Expanded(
+                                flex: 5,
+                                child: TextField(
+                                  controller: manager.configPathC,
+                                  decoration: InputDecoration(
+                                    labelText: 'Nebula config path',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  readOnly: true,
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: TextButton(
+                                  onPressed: manager.setNebulaConfig,
+                                  child: const Text('Browse...'),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: TextButton(
+                                  onPressed:
+                                      state.config.configPath == null ||
+                                          state.config.binaryPath == null
+                                      ? null
+                                      : manager.testConfig,
+                                  child: const Text('Test'),
+                                ),
+                              ),
+                            ],
+                          ),
+                          DropdownButtonFormField<Theme>(
+                            initialValue: state.config.theme,
+                            items: Theme.values
+                                .map(
+                                  (el) => DropdownMenuItem(
+                                    value: el,
+                                    child: Text(el.themeName),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: manager.setTheme,
+                            decoration: InputDecoration(
+                              labelText: 'App theme',
+                              border: OutlineInputBorder(),
                             ),
-                            TextButton(
-                              onPressed: manager.searchNebulaBinary,
-                              child: const Text('Find'),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: .center,
-                          children: [
-                            Text('Nebula config: ${state.config.configPath ?? 'Not set'}'),
-                            TextButton(
-                              onPressed: manager.setNebulaConfig,
-                              child: const Text('Set'),
-                            ),
-                            TextButton(
-                              onPressed: state.config.configPath == null || state.config.binaryPath == null ? null : manager.testConfig,
-                              child: const Text('Test'),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: .center,
-                          children: [
-                            Text('Current theme:'),
-                            DropdownButton<Theme>(
-                              value: state.config.theme,
-                              items: Theme.values.map((el) => DropdownMenuItem(value: el, child: Text(el.themeName))).toList(),
-                              onChanged: manager.setTheme)
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
           ),

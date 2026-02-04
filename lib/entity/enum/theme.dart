@@ -22,5 +22,3 @@ enum Theme {
 
 ThemeData _lightTheme = ThemeData.light().copyWith(colorScheme: .fromSeed(seedColor: Colors.red));
 ThemeData _darkTheme = ThemeData.dark().copyWith(colorScheme: .fromSeed(seedColor: Colors.red));
-
-

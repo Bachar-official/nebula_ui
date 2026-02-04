@@ -21,16 +21,22 @@ class ConfigManager extends ManagerBase<ConfigState>
     getAllNebulaConfig();
   }
 
+  final binaryPathC = TextEditingController();
+  final configPathC = TextEditingController();
+
   void setIsLoading(bool isLoading) =>
       handle((emit) async => emit(state.copyWith(isLoading: isLoading)));
 
   void setConfigBinary(String path) => handle((emit) async {
     final newConfig = state.config.copyWith(binaryPath: path);
     emit(state.copyWith(config: newConfig));
+    binaryPathC.text = path;
   });
 
   void setConfigYml(String path) => handle((emit) async {
-    emit(state.copyWith(config: state.config.copyWith(configPath: path)));
+    final newConfig = state.config.copyWith(configPath: path);
+    emit(state.copyWith(config: newConfig));
+    configPathC.text = path;
   });
 
   void setTheme(Theme? theme) => handle((emit) async {
@@ -165,7 +171,7 @@ class ConfigManager extends ManagerBase<ConfigState>
     try {
       setIsLoading(true);
       final result = await configService.getNebulaPath();
-      checkCondition(result.isEmpty, 'Nebula binary not found. Please, set it manually.');
+      checkCondition(result.isEmpty, 'Nebula binary not found. Please set it manually.');
       setConfigBinary(result);
     } catch (e, s) {
       catchException(
