@@ -13,6 +13,8 @@ class Config {
 
   bool get isInitial => _isInitial();
 
+  bool get isValid => binaryPath != null && configPath != null;
+
   const Config.initial() : binaryPath = null, configPath = null, theme = .light;
 
   Config copyWith({String? binaryPath, String? configPath, Theme? theme}) => Config(

@@ -23,7 +23,7 @@ class ConfigScreen extends StatelessWidget {
                 IconButton(
                   tooltip: 'Save config',
                   icon: const Icon(Icons.save),
-                  onPressed: manager.saveAllConfig,
+                  onPressed: state.config.isValid ? manager.saveAllConfig : null,
                 ),
               ],
             ),
