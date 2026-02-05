@@ -1,7 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart' hide Theme;
 import 'package:nebula_ui/app/routing.dart';
-import 'package:nebula_ui/components/empty_config_dialog.dart';
+import 'package:nebula_ui/components/yes_no_dialog.dart';
 import 'package:nebula_ui/entity/entity.dart';
 import 'package:nebula_ui/entity/enum/enum.dart';
 import 'package:nebula_ui/feature/config/config_state.dart';
@@ -27,20 +27,23 @@ class ConfigManager extends ManagerBase<ConfigState>
   void setIsLoading(bool isLoading) =>
       handle((emit) async => emit(state.copyWith(isLoading: isLoading)));
 
+  void setConfig(Config config) => handle((emit) async => emit(state.copyWith(config: config)));
+
   void setConfigBinary(String path) => handle((emit) async {
     final newConfig = state.config.copyWith(binaryPath: path);
-    emit(state.copyWith(config: newConfig));
+    setConfig(newConfig);
     binaryPathC.text = path;
   });
 
   void setConfigYml(String path) => handle((emit) async {
     final newConfig = state.config.copyWith(configPath: path);
-    emit(state.copyWith(config: newConfig));
+    setConfig(newConfig);
     configPathC.text = path;
   });
 
   void setTheme(Theme? theme) => handle((emit) async {
-    emit(state.copyWith(config: state.config.copyWith(theme: theme)));
+    final newConfig = state.config.copyWith(theme: theme);
+    setConfig(newConfig);
   });
 
   Future<void> getAllNebulaConfig() async {
@@ -49,11 +52,19 @@ class ConfigManager extends ManagerBase<ConfigState>
       setIsLoading(true);
       final config = await configService.getConfig();
       if (config.isInitial) {
-        warning('Nebula config not found');        
-        final settingsResult = await showDialog<bool>(context: deps.navKey.currentState!.context, builder: (ctx) => EmptyConfigDialog());
-        if (settingsResult!) {
+        warning('Nebula config not found');
+        final settingsResult = await showDialog<bool>(
+          useRootNavigator: true,
+          context: deps.navKey.currentState!.context,
+          builder: (ctx) => YesNoDialog(
+            title: 'Config is empty',
+            content:
+                'Looks like there\'s first app launch.\nDo you want to set it up?',
+          ),
+        );
+        if (settingsResult != null && settingsResult) {
           deps.navKey.currentState!.pushNamed(AppRouter.preferences);
-        }            
+        }
       }
       handle((emit) async => emit(state.copyWith(config: config)));
     } catch (e, s) {
@@ -171,7 +182,10 @@ class ConfigManager extends ManagerBase<ConfigState>
     try {
       setIsLoading(true);
       final result = await configService.getNebulaPath();
-      checkCondition(result.isEmpty, 'Nebula binary not found. Please set it manually.');
+      checkCondition(
+        result.isEmpty,
+        'Nebula binary not found. Please set it manually.',
+      );
       setConfigBinary(result);
     } catch (e, s) {
       catchException(
@@ -182,6 +196,64 @@ class ConfigManager extends ManagerBase<ConfigState>
       );
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  Future<void> resetConfig() async {
+    debug('Try to reset config');
+    setIsLoading(true);
+    try {
+      final savedConfig = await configService.getConfig();
+      setConfig(savedConfig);
+      configPathC.text = savedConfig.configPath ?? '';
+      binaryPathC.text = savedConfig.binaryPath ?? '';
+      success('Config reset');
+    } catch(e, s) {
+      catchException(
+        deps: deps,
+        exception: e,
+        stacktrace: s,
+        message: 'Error while resetting config',
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  Future<void> onPop(bool didPop, Object? _) async {
+    if (didPop) return;
+    final isDirty = await configService.isConfigDirty(state.config);
+    final isInit = state.config.isInitial;
+    if (isDirty) {
+      final result = await showDialog<bool>(
+        useRootNavigator: true,
+        context: deps.navKey.currentState!.context,
+        builder: (ctx) => YesNoDialog(
+          title: 'Unsaved config',
+          content: 'Do you want to save changes?',
+        ),
+      );
+      if (result != null && result) {
+        await saveAllConfig();
+      } else {
+        await resetConfig();
+      }
+      deps.navKey.currentState!.pop();
+      return;
+    }
+    if (isInit) {
+      final result = await showDialog<bool>(
+        useRootNavigator: true,
+        context: deps.navKey.currentState!.context,
+        builder: (ctx) => YesNoDialog(
+          title: 'Empty config',
+          content:
+              'Your config is empty.\nAre you sure you want to exit config screen?',
+        ),
+      );
+      if (result != null && result) {
+        deps.navKey.currentState!.pop();
+      }
     }
   }
 }

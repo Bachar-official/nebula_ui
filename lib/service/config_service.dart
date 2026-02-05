@@ -29,4 +29,9 @@ class ConfigService {
     final configFile = File(configPath);
     await configFile.writeAsString(jsonEncode(config.toMap()));
   }
+
+  Future<bool> isConfigDirty(Config localConfig) async {
+    final savedConfig = await getConfig();
+    return localConfig != savedConfig;
+  }
 }

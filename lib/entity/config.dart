@@ -9,7 +9,11 @@ class Config {
   final String? configPath;
   final Theme theme;
 
-  const Config({required this.binaryPath, required this.configPath, required this.theme});
+  const Config({
+    required this.binaryPath,
+    required this.configPath,
+    required this.theme,
+  });
 
   bool get isInitial => _isInitial();
 
@@ -17,18 +21,40 @@ class Config {
 
   const Config.initial() : binaryPath = null, configPath = null, theme = .light;
 
-  Config copyWith({String? binaryPath, String? configPath, Theme? theme}) => Config(
-    binaryPath: binaryPath ?? this.binaryPath,
-    configPath: configPath ?? this.configPath,
-    theme: theme ?? this.theme,
-  );
+  Config copyWith({String? binaryPath, String? configPath, Theme? theme}) =>
+      Config(
+        binaryPath: binaryPath ?? this.binaryPath,
+        configPath: configPath ?? this.configPath,
+        theme: theme ?? this.theme,
+      );
 
   Map<String, dynamic> toMap() {
-    return {_binaryPathKey: binaryPath, _configPathKey: configPath, _themeKey: theme.themeName};
+    return {
+      _binaryPathKey: binaryPath,
+      _configPathKey: configPath,
+      _themeKey: theme.themeName,
+    };
   }
 
-  factory Config.fromMap(Map<String, dynamic> map) =>
-      Config(binaryPath: map[_binaryPathKey], configPath: map[_configPathKey], theme: Theme.fromString(map[_themeKey]));
+  factory Config.fromMap(Map<String, dynamic> map) => Config(
+    binaryPath: map[_binaryPathKey],
+    configPath: map[_configPathKey],
+    theme: Theme.fromString(map[_themeKey]),
+  );
 
   bool _isInitial() => binaryPath == null && configPath == null;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! Config) {
+      return false;
+    }
+    return binaryPath == other.binaryPath &&
+        configPath == other.configPath &&
+        theme == other.theme;
+  }
+
+  @override
+  int get hashCode =>
+      binaryPath.hashCode ^ configPath.hashCode ^ theme.hashCode;
 }
