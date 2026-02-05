@@ -16,7 +16,6 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     
-    // Показываем 0.8 секунд, затем анимируем исчезновение 0.2 секунды
     Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) {
         setState(() {
@@ -25,7 +24,6 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     });
 
-    // Через 1 секунду переходим
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/home');
@@ -36,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey,
       body: Center(
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 200),
