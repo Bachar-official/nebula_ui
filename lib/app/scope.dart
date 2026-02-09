@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nebula_ui/feature/config/config_manager.dart';
 import 'package:nebula_ui/feature/config/config_state.dart';
+import 'package:nebula_ui/feature/home/home_manager.dart';
+import 'package:nebula_ui/feature/home/home_state.dart';
 import 'package:nebula_ui/service/service.dart';
 import 'package:yx_scope/yx_scope.dart';
 import 'package:logger/logger.dart';
@@ -24,6 +26,17 @@ class AppScopeContainer extends ScopeContainer {
       configService: configService.get,
       nebulaService: nebulaService.get,
     )),
+  );
+
+  late final homeManager = dep(
+    () => (
+      HomeManager(
+        HomeState.initial(),
+        deps: deps.get,
+        configService: configService.get,
+        nebulaService: nebulaService.get,
+      )
+    ),
   );
 }
 

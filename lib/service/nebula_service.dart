@@ -2,61 +2,45 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:nebula_ui/entity/entity.dart';
 
 const _configArg = '-config';
 
 class NebulaService {
-  Process? _nebulaProcess;
-  final StreamController<String> _stdOutController =
-      StreamController<String>.broadcast();
-  final StreamController<String> _stdErrController =
-      StreamController<String>.broadcast();
+  final ValueNotifier<Process?> _nebulaProcess = ValueNotifier(null);
+  final _out = StreamController<String>.broadcast();
+  final _err = StreamController<String>.broadcast();
 
-  Stream<String> get nebulaStdOut => _stdOutController.stream;
-  Stream<String> get nebulaStdErr => _stdErrController.stream;
+  Stream<String> get stdout => _out.stream;
+  Stream<String> get stderr => _err.stream;
 
-  final StreamController<bool> _isRunningController =
-      StreamController<bool>.broadcast();
-  Stream<bool> get isRunning => _isRunningController.stream;
+  bool get isRunning => _nebulaProcess.value != null;
 
-  final List<StreamSubscription> _subscriptions = [];
-
-  Future<void> startNebula(Config config) async {
-    if (_nebulaProcess != null) {
+  Future<void> start(Config config) async {
+    if (_nebulaProcess.value != null) {
       stopNebula();
     }
 
-    _nebulaProcess = Platform.isLinux
+    final process = Platform.isLinux
         ? await Process.start('pkexec', [
             config.binaryPath!,
             _configArg,
             config.configPath!,
-          ], runInShell: false)
+          ])
         : await Process.start(config.binaryPath!, [
             _configArg,
             config.configPath!,
-          ], mode: ProcessStartMode.detached);
+          ],);
 
-    _subscriptions.addAll([
-      _nebulaProcess!.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen((line) {
-            _stdOutController.add(line);
-          }),
-      _nebulaProcess!.stderr
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen((line) {
-            _stdErrController.add(line);
-          }),
-    ]);
+    _nebulaProcess.value = process;
 
-    _nebulaProcess!.exitCode.then((code) {
-      _stdOutController.add('Nebula process exited with code: $code');
-      _cleanup();
-      _isRunningController.add(false);
+    process.stdout.transform(utf8.decoder).transform(const LineSplitter()).listen(_out.add);
+    process.stderr.transform(utf8.decoder).transform(const LineSplitter()).listen(_err.add);
+
+    process.exitCode.then((code) {
+      _out.add('Nebula exited with code $code');
+      _nebulaProcess.value = null;
     });
   }
 
@@ -72,30 +56,13 @@ class NebulaService {
     }
   }
 
-  void _cleanup() {
-    for (var sub in _subscriptions) {
-      sub.cancel();
-    }
-    _subscriptions.clear();
+  Future<void> stopNebula() async {
+    final process = _nebulaProcess.value;
+    
+    if (process == null) return;
 
-    _nebulaProcess = null;
-    _isRunningController.add(false);
-  }
-
-  void stopNebula() async {
-    if (_nebulaProcess != null) {
-      _stdOutController.add('Stopping Nebula...');
-      _nebulaProcess!.kill();
-      await _nebulaProcess!.exitCode;
-      _cleanup();
-      _stdOutController.add('Nebula stopped');
-    }
-  }
-
-  void dispose() {
-    stopNebula();
-    _stdOutController.close();
-    _stdErrController.close();
-    _isRunningController.close();
+    process.kill();
+    await process.exitCode;
+    _nebulaProcess.value = null;
   }
 }

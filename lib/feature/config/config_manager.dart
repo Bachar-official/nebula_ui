@@ -50,7 +50,12 @@ class ConfigManager extends ManagerBase<ConfigState>
     debug('Trying to get Nebula config');
     try {
       setIsLoading(true);
-      final config = await configService.getConfig();
+      await configService.getConfig();
+      final config = configService.config;
+
+      binaryPathC.text = config.binaryPath ?? '';
+      configPathC.text = config.configPath ?? '';
+
       if (config.isInitial) {
         warning('Nebula config not found');
         final settingsResult = await showDialog<bool>(
@@ -203,7 +208,7 @@ class ConfigManager extends ManagerBase<ConfigState>
     debug('Try to reset config');
     setIsLoading(true);
     try {
-      final savedConfig = await configService.getConfig();
+      final savedConfig = configService.config;
       setConfig(savedConfig);
       configPathC.text = savedConfig.configPath ?? '';
       binaryPathC.text = savedConfig.binaryPath ?? '';
@@ -254,6 +259,8 @@ class ConfigManager extends ManagerBase<ConfigState>
       if (result != null && result) {
         deps.navKey.currentState!.pop();
       }
+    } else {
+      deps.navKey.currentState!.pop();
     }
   }
 }

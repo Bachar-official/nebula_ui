@@ -3,6 +3,7 @@ export './condition.dart';
 export './manager_deps.dart';
 
 export './enum/snackbar_reason.dart';
+export './enum/log_level.dart';
 
 export './interface/has_deps.dart';
 export './interface/manager_base.dart';
